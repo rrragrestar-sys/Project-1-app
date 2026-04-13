@@ -43,3 +43,21 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Additional Build Exclusions
+build/
+android/build/
+ios/Flutter/ephemeral/
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/
+windows/flutter/ephemeral/
+.gradle/
+*.apk
+*.so
+*.bin
+*.sym
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.m
+**/GeneratedPluginRegistrant.h
+**/generated_plugin_registrant.dart
+

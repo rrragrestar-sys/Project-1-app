@@ -5,8 +5,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+layout.buildDirectory.set(rootProject.projectDir.parentFile.resolve("build").resolve(project.name))
+
 android {
-    namespace = "com.example.project_1_app"
+    namespace = "com.neonnoir.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,13 +17,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.project_1_app"
+        applicationId = "com.neonnoir.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -41,4 +39,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+kotlin {
+    jvmToolchain(17)
 }
