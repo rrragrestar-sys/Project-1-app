@@ -20,9 +20,13 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
   double _crashPoint = 2.5;
   int _bettingCountdown = 10;
   
+  // Balance state
+  double _userBalance = 12500.50;
+  
   // Betting state
   double _betAmount = 100.0;
   bool _isBetPlaced = false;
+  bool _autoBet1 = false;
   double? _cashoutMultiplier;
   
   Timer? _gameTimer;
@@ -37,6 +41,7 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
   // Betting panel 2
   double _betAmount2 = 100.0;
   bool _isBetPlaced2 = false;
+  bool _autoBet2 = false;
   double? _cashoutMultiplier2;
   
   late AnimationController _pulseController;
@@ -98,8 +103,12 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
       _multiplier = 1.0;
       _timeInFlight = 0.0;
       _gridOffset = 0.0;
-      _isBetPlaced = false;
-      _isBetPlaced2 = false;
+      _isBetPlaced = _autoBet1 && _userBalance >= _betAmount;
+      _isBetPlaced2 = _autoBet2 && _userBalance >= _betAmount2;
+      
+      if (_isBetPlaced) _userBalance -= _betAmount;
+      if (_isBetPlaced2) _userBalance -= _betAmount2;
+
       _cashoutMultiplier = null;
       _cashoutMultiplier2 = null;
       
@@ -121,16 +130,13 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
 
   void _prepareFlight() {
     setState(() => _gameState = GameState.waiting);
-    // Generate a random crash point
-    // Logic: 10% chance of instant crash (1.00), 50% below 2.0, 40% above 2.0
-    double r = _random.nextDouble();
-    if (r < 0.1) {
-      _crashPoint = 1.00;
-    } else if (r < 0.6) {
-      _crashPoint = 1.0 + _random.nextDouble() * 1.5;
-    } else {
-      _crashPoint = 2.5 + _random.nextDouble() * 8.0;
-    }
+    // Provably Fair Style Logic
+    // crashPoint = 0.99 * 100 / (100 - r) where r is [0, 99]
+    double r = _random.nextDouble() * 100;
+    _crashPoint = math.max(1.0, 0.99 * 100 / (100 - r));
+    
+    // Cap at 1000x for safety, but extremely rare
+    if (_crashPoint > 1000) _crashPoint = 1000.0;
 
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) _startFlight();
@@ -143,8 +149,12 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
     _gameTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
         _timeInFlight += 0.05;
-        _gridOffset += 0.05 * math.max(1.0, _multiplier / 5); // accelerate grid
-        _multiplier = (math.pow(math.e, 0.08 * _timeInFlight)).toDouble();
+        _gridOffset += 0.05 * math.max(1.0, _multiplier / 5);
+        
+        // Multiplier growth: 1.0 + exponential curve
+        // Slightly faster growth over time
+        _multiplier = 1.0 + (math.pow(_timeInFlight, 1.5) * 0.05);
+        if (_multiplier < 1.0) _multiplier = 1.0;
         
         // Auto-cashout logic
         if (_autoCashout1 && _isBetPlaced && _cashoutMultiplier == null && _multiplier >= _autoCashoutThreshold1) {
@@ -186,8 +196,20 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
   }
 
   void _onBetPressed() {
-    if (_gameState == GameState.betting) {
-      setState(() => _isBetPlaced = true);
+    if (_gameState == GameState.betting && !_isBetPlaced && _userBalance >= _betAmount) {
+      setState(() {
+        _isBetPlaced = true;
+        _userBalance -= _betAmount;
+      });
+    }
+  }
+
+  void _onBetPressed2() {
+    if (_gameState == GameState.betting && !_isBetPlaced2 && _userBalance >= _betAmount2) {
+      setState(() {
+        _isBetPlaced2 = true;
+        _userBalance -= _betAmount2;
+      });
     }
   }
 
@@ -195,6 +217,16 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
     if (_gameState == GameState.flying && _isBetPlaced && _cashoutMultiplier == null) {
       setState(() {
         _cashoutMultiplier = _multiplier;
+        _userBalance += _betAmount * _multiplier;
+      });
+    }
+  }
+
+  void _onCashOut2() {
+    if (_gameState == GameState.flying && _isBetPlaced2 && _cashoutMultiplier2 == null) {
+      setState(() {
+        _cashoutMultiplier2 = _multiplier;
+        _userBalance += _betAmount2 * _multiplier;
       });
     }
   }
@@ -224,10 +256,10 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: NeonColors.primary.withValues(alpha: 0.5)),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                '12,500.50 USD',
-                style: TextStyle(color: NeonColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                '${_userBalance.toStringAsFixed(2)} USD',
+                style: const TextStyle(color: NeonColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
           ),
@@ -484,6 +516,7 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -516,10 +549,24 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
               )).toList(),
             ),
             const SizedBox(height: 8),
-            // Auto Cashout Toggle
+            // Auto Bet & Auto Cashout Toggles
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const Text('Auto Bet', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                SizedBox(
+                  height: 20,
+                  child: Transform.scale(
+                    scale: 0.6,
+                    child: Switch(
+                      value: isPanel1 ? _autoBet1 : _autoBet2,
+                      onChanged: (val) => setState(() => isPanel1 ? _autoBet1 = val : _autoBet2 = val),
+                      activeTrackColor: NeonColors.primary.withValues(alpha: 0.5),
+                      activeThumbColor: NeonColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 const Text('Auto Cashout', style: TextStyle(color: Colors.white70, fontSize: 10)),
                 SizedBox(
                   height: 20,
@@ -557,34 +604,33 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
                 ],
               ),
             const SizedBox(height: 8),
-            Expanded(
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cashout != null 
-                        ? Colors.grey.withValues(alpha: 0.3)
-                        : (canCashout ? Colors.orange : (isPlaced ? Colors.red : Colors.green)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: isPlaced ? 8 : 0,
-                    padding: EdgeInsets.zero,
-                  ),
-                  onPressed: isFlying 
-                      ? (canCashout ? (isPanel1 ? _onCashOut : _onCashOut2) : null) 
-                      : (isPlaced ? null : (isPanel1 ? _onBetPressed : _onBetPressed2)),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        canCashout ? 'CASHOUT' : (isPlaced ? (isFlying ? 'FLYING' : 'WAITING') : 'BET'),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: canCashout ? 14 : 16),
-                      ),
-                      if (canCashout)
-                        Text((_multiplier * amount).toStringAsFixed(2), style: const TextStyle(fontSize: 10)),
-                      if (cashout != null)
-                        Text((cashout * amount).toStringAsFixed(2), style: const TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+            SizedBox(
+              height: 48,
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cashout != null 
+                      ? Colors.grey.withValues(alpha: 0.3)
+                      : (canCashout ? Colors.orange : (isPlaced ? Colors.red : Colors.green)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: isPlaced ? 8 : 0,
+                  padding: EdgeInsets.zero,
+                ),
+                onPressed: isFlying 
+                    ? (canCashout ? (isPanel1 ? _onCashOut : _onCashOut2) : null) 
+                    : (isPlaced ? null : (isPanel1 ? _onBetPressed : _onBetPressed2)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      canCashout ? 'CASHOUT' : (isPlaced ? (isFlying ? 'FLYING' : 'WAITING') : 'BET'),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: canCashout ? 14 : 16),
+                    ),
+                    if (canCashout)
+                      Text((_multiplier * amount).toStringAsFixed(2), style: const TextStyle(fontSize: 10)),
+                    if (cashout != null)
+                      Text('+${(cashout * amount).toStringAsFixed(2)}', style: const TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                  ],
                 ),
               ),
             ),
@@ -594,15 +640,6 @@ class _AviatorPageState extends State<AviatorPage> with TickerProviderStateMixin
     );
   }
 
-  void _onBetPressed2() {
-    if (_gameState == GameState.betting) setState(() => _isBetPlaced2 = true);
-  }
-
-  void _onCashOut2() {
-    if (_gameState == GameState.flying && _isBetPlaced2 && _cashoutMultiplier2 == null) {
-      setState(() => _cashoutMultiplier2 = _multiplier);
-    }
-  }
 
   Widget _buildAmountBtn(String label, VoidCallback onTap) {
     return GestureDetector(

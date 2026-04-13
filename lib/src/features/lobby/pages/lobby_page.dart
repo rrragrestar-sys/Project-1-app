@@ -7,6 +7,7 @@ import '../widgets/featured_banner.dart';
 import '../widgets/game_card.dart';
 import '../widgets/live_casino_card.dart';
 import '../../aviator/pages/aviator_page.dart';
+import '../../chicken_road/pages/chicken_road_page.dart';
 
 class LobbyPage extends StatefulWidget {
   const LobbyPage({super.key});
@@ -59,10 +60,18 @@ class _LobbyPageState extends State<LobbyPage> {
                       );
                     },
                   ),
-                  const GameCard(
+                  GameCard(
                     title: 'Chicken Road',
                     provider: 'INSTANT WIN',
                     imageUrl: 'assets/chicken_road.png',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChickenRoadPage(),
+                        ),
+                      );
+                    },
                   ),
                   const GameCard(
                     title: '7 Up 7 Down',
