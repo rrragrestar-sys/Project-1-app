@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants.dart';
+import '../../../shared/widgets/glass_container.dart';
 
 class LiveCasinoCard extends StatelessWidget {
   final String title;
@@ -21,6 +22,10 @@ class LiveCasinoCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: NeonColors.primary.withValues(alpha: 0.5), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: NeonColors.primary.withValues(alpha: 0.2), blurRadius: 15, spreadRadius: -5),
+        ],
         image: DecorationImage(
           image: AssetImage(imageUrl),
           fit: BoxFit.cover,
@@ -33,7 +38,8 @@ class LiveCasinoCard extends StatelessWidget {
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              Colors.black.withValues(alpha: 0.9),
+              NeonColors.background,
+              NeonColors.background.withValues(alpha: 0.6),
               Colors.transparent,
             ],
           ),
@@ -45,33 +51,40 @@ class LiveCasinoCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.circle, color: Colors.green, size: 8),
-                const SizedBox(width: 6),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent,
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(color: Colors.greenAccent, blurRadius: 6)],
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Text(
                   '$tables TABLES ACTIVE',
-                  style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               title,
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                shadows: [const Shadow(color: Colors.black, blurRadius: 5)],
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: NeonColors.secondary,
-                borderRadius: BorderRadius.circular(8),
-              ),
+            GlassContainer(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              borderRadius: 12,
+              borderColor: NeonColors.primary.withValues(alpha: 0.6),
               child: const Text(
                 'JOIN TABLE',
-                style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(color: NeonColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
           ],

@@ -3,5 +3,5 @@ import 'src/app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NeonNoirApp());
+  runApp(const LuckyKingApp());
 }

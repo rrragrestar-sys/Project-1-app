@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'core/constants.dart';
-import 'features/lobby/pages/lobby_page.dart';
+import 'features/onboarding/pages/splash_page.dart';
 
-class NeonNoirApp extends StatelessWidget {
-  const NeonNoirApp({super.key});
+class LuckyKingApp extends StatelessWidget {
+  const LuckyKingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Neon Noir',
+      title: 'Lucky King',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: NeonColors.background,
         primaryColor: NeonColors.primary,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: NeonColors.primary,
           secondary: NeonColors.secondary,
           surface: NeonColors.surface,
         ),
         useMaterial3: true,
       ),
-      home: const LobbyPage(),
+      home: const SplashPage(),
     );
   }
 }

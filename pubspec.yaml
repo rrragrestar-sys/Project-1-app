@@ -1,5 +1,5 @@
-name: neon_noir
-description: "A new Flutter project."
+name: lucky_king
+description: "Lucky King - Premium Gambling App"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -35,6 +35,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^8.0.2
+  share_plus: ^12.0.2
+  flame: ^1.35.1
+  flame_forge2d: ^0.19.2+4
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

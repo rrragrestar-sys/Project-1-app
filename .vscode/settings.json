@@ -1,3 +1,5 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "E:/Project-1-app/linux",
+    "java.jdt.ls.java.home": "C:\\Program Files\\Android\\Android Studio2\\jbr"
 }

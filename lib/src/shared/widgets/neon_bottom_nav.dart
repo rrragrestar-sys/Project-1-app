@@ -23,10 +23,9 @@ class NeonBottomNav extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildItem(Icons.home_outlined, 'LOBBY', selectedIndex == 0, 0),
-          _buildItem(Icons.search, 'SEARCH', selectedIndex == 1, 1),
-          _buildItem(Icons.account_balance_wallet_outlined, 'WALLET', selectedIndex == 2, 2),
-          _buildItem(Icons.card_giftcard, 'OFFERS', selectedIndex == 3, 3),
-          _buildItem(Icons.person_outline, 'PROFILE', selectedIndex == 4, 4),
+          _buildItem(Icons.account_balance_wallet_outlined, 'WALLET', selectedIndex == 1, 1),
+          _buildItem(Icons.card_giftcard, 'OFFERS', selectedIndex == 2, 2),
+          _buildItem(Icons.person_outline, 'PROFILE', selectedIndex == 3, 3),
         ],
       ),
     );
